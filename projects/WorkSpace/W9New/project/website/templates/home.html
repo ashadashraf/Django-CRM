@@ -2,13 +2,42 @@
 
 {% block content %}
 
-<div class="col-md-6 offset-md-3">
+
 
 {% if user.is_authenticated %}
 
-<h1>Hello</h1>
+<h1>Records</h1>
+
+<table class="table table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Country</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if records %}
+        {% for record in records %}
+        <tr>
+            <td><a href="{% url 'record' record.id %}">{{record.id}}</a></td>
+            <td>{{record.first_name}} {{record.last_name}}</td>
+            <td>{{record.email}}</td>
+            <td>{{record.phone}}</td>
+            <td>{{record.country}}</td>
+            <td><a href="{% url 'record' record.id %}" class="btn btn-secondary offset-md-2">Edit</a></td>
+            
+        </tr>
+        {% endfor %}
+    {% endif %}
+    </tbody>
+</table>
+
 
 {% else %}
+<div class="col-md-6 offset-md-3">
 <h1>Login</h1>
 <br>
 <form method="POST" action="{% url 'home' %}">
