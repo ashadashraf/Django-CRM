@@ -42,3 +42,14 @@ class AddRecordForm(forms.ModelForm):
     class Meta:
         model = Record
         exclude = ("user",)
+
+class AddUserForm(forms.ModelForm):
+    username = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Username", "class":"form-control"}), label="")
+    first_name = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"First Name", "class":"form-control"}), label="")
+    last_name = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"First Name", "class":"form-control"}), label="")
+    email = forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Email", "class":"form-control"}), label="")
+    password= forms.CharField(required=True, widget=forms.widgets.TextInput(attrs={"placeholder":"Password", "class":"form-control"}), label="")
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password')

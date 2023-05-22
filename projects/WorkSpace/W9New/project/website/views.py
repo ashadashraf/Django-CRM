@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import SignUpForm, AddRecordForm
+from .forms import SignUpForm, AddRecordForm, AddUserForm
 from .models import Record
+from django.contrib.auth.models import User
+from django.views.decorators.cache import never_cache
+
 
 # Create your views here.
 
@@ -38,10 +41,11 @@ def register_user(request):
         if form.is_valid():
             form.save()
             # Authenticate and login
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password1']
-            user = authenticate(username=username, password=password)
-            login(request, user)
+
+            # username = form.cleaned_data['username']
+            # password = form.cleaned_data['password1']
+            # user = authenticate(username=username, password=password)
+            # login(request, user)
             messages.success(request, 'Registration Success')
             return redirect('home')
     else:
@@ -96,3 +100,55 @@ def update_record(request, pk):
     else:
         messages.success(request, "Login Required")
         return redirect('home')
+    
+def logout_admin(request):
+    if 'username' in request.session:
+        request.session.flush()
+        messages.info(request,'logout success')
+    return redirect('dashboard')
+
+def dashboard(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        admin = authenticate(username=username, password=password)
+        if admin.is_superuser:
+            request.session['username'] = username
+            if request.session.get('username') == username:
+                messages.success(request, 'Login Success')
+                return redirect('adminpanel')
+        else:
+            messages.success(request, 'You are not an admin')
+            return render(request, 'adminlogin.html')
+        
+    elif request.session.get('username'):
+        return redirect('adminpanel')
+    else:
+        messages.success(request, "Logout Success")
+        return render(request, 'adminlogin.html')
+    
+@never_cache
+def adminpanel(request):
+    if 'username' in request.session:
+        users = User.objects.all()
+        return render(request, 'adminpanel.html', {'users':users})
+    return redirect('dashboard')
+    
+    
+
+
+def update_user(request, pk):
+    current_record = User.objects.get(pk=pk)
+    form = AddUserForm(request.POST or None, instance=current_record)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Record Successully Updated")
+        return redirect('adminpanel')
+    return render(request, 'update_record.html', {'form':form, 'users':current_record})
+
+def delete_user(request, pk):
+    delete_it = User.objects.get(pk=pk)
+    delete_it.delete()
+    messages.success(request, 'User Deleted successfully')
+    return redirect('adminpanel')
